@@ -6,7 +6,8 @@ import { Activity, ArrowRight, CalendarDays, CheckCircle2, Clock3, LoaderCircle,
 
 type Metrics = { total: number; completed: number; active: number; overdue: number; completionRate: number };
 type ModuleSummary = Metrics & { moduleId: string };
-type Summary = { scope: "personal" | "company"; metrics: Metrics; modules: ModuleSummary[]; note?: string };
+type PropertySalesSummary = { listings: number; listingsClosed: number; leads: number; leadsClosed: number; showings: number; showingsCompleted: number; contracts: number; contractsSigned: number; note?: string };
+type Summary = { scope: "personal" | "company"; metrics: Metrics; modules: ModuleSummary[]; propertySalesSummary?: PropertySalesSummary; note?: string };
 
 const moduleNames: Record<string, string> = {
   "general-ledger": "General Ledger", "financial-reports": "Financial Reports", "tax-and-compliance": "Tax & Compliance", "ai-data-analytics": "AI Data Analytics",
@@ -54,10 +55,25 @@ export default function AchievementSummary() {
       </div>
       <div style={s.progressHead}><span>Progres penyelesaian</span><b>{metrics?.completionRate ?? 0}%</b></div><div style={s.track}><div style={{ ...s.fill, width: `${metrics?.completionRate ?? 0}%` }} /></div>
       {data?.scope === "personal" && data.modules.length > 0 && <div style={s.moduleList}><b style={s.moduleHeading}>Pencapaian per modul</b>{data.modules.map((item) => <div style={s.moduleRow} key={item.moduleId}><span>{moduleNames[item.moduleId] ?? item.moduleId}</span><span>{item.completed}/{item.total} selesai · {item.completionRate}%</span></div>)}</div>}
+      {data?.propertySalesSummary && <div style={s.propertyPanel}>
+        <b style={s.moduleHeading}>Ringkasan penjualan dari Agen Properti</b>
+        <p style={s.propertyIntro}>Angka gabungan dari modul properti seluruh agen. Detail dan identitas klien tidak ditampilkan.</p>
+        <div style={s.propertyGrid}>
+          <PropertyMetric label="Listing properti" value={data.propertySalesSummary.listings} detail={`${data.propertySalesSummary.listingsClosed} terjual/disewakan`} />
+          <PropertyMetric label="Calon klien" value={data.propertySalesSummary.leads} detail={`${data.propertySalesSummary.leadsClosed} selesai ditangani`} />
+          <PropertyMetric label="Kunjungan" value={data.propertySalesSummary.showings} detail={`${data.propertySalesSummary.showingsCompleted} selesai`} />
+          <PropertyMetric label="Kontrak" value={data.propertySalesSummary.contracts} detail={`${data.propertySalesSummary.contractsSigned} ditandatangani`} />
+        </div>
+        {data.propertySalesSummary.note && <p style={s.empty}>{data.propertySalesSummary.note}</p>}
+      </div>}
       {data?.scope === "company" && <a href="/super-admin/achievements" style={s.link}>Lihat pencapaian seluruh perusahaan <ArrowRight size={15} /></a>}
       {(!metrics || metrics.total === 0) && <p style={s.empty}>Belum ada catatan kerja. Angka akan bertambah setelah pekerjaan dicatat di modul terkait.</p>}
     </>}
   </section>;
+}
+
+function PropertyMetric({ label, value, detail }: { label: string; value: number; detail: string }) {
+  return <div style={s.propertyMetric}><span>{label}</span><b>{value}</b><small>{detail}</small></div>;
 }
 
 function Metric({ icon, label, value }: { icon: React.ReactNode; label: string; value: number }) {
@@ -79,6 +95,10 @@ const s: Record<string, React.CSSProperties> = {
   progressHead: { display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 12, color: "#5c6175", marginTop: 17 },
   track: { height: 7, borderRadius: 20, background: "#efedf8", overflow: "hidden", marginTop: 8 },
   fill: { height: "100%", borderRadius: 20, background: "#7162df" },
+  propertyPanel: { marginTop: 20, paddingTop: 16, borderTop: "1px solid #eceef4" },
+  propertyIntro: { margin: "5px 0 12px", fontSize: 11, lineHeight: 1.5, color: "#777d90" },
+  propertyGrid: { display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(125px,1fr))", gap: 9 },
+  propertyMetric: { display: "grid", gap: 5, background: "#f8fbff", border: "1px solid #e7edf6", borderRadius: 10, padding: 11 },
   moduleList: { marginTop: 17, display: "grid", gap: 8 },
   moduleHeading: { fontSize: 12, color: "#51566b", marginBottom: 2 },
   moduleRow: { display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, borderTop: "1px solid #f0f1f6", paddingTop: 8, fontSize: 11, color: "#666b7e" },
