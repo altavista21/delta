@@ -110,7 +110,7 @@ function moduleAllowed(role: string, moduleId: string, isSuperAdmin: boolean) {
 }
 
 async function companyItems(moduleId?: string) {
-  const snapshot = await adminDb().collectionGroup("items").orderBy("createdAt", "desc").limit(5000).get();
+  const snapshot = await adminDb().collectionGroup("items").limit(5000).get();
   const profilesSnapshot = await adminDb().collection("users").get();
   const profiles = new Map(profilesSnapshot.docs.map((doc) => [doc.id, String(doc.get("displayName") ?? "Pengguna")]));
   return snapshot.docs
