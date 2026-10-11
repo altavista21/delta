@@ -4,13 +4,15 @@ service cloud.firestore {
     match /users/{userId} {
       allow read: if request.auth != null && request.auth.uid == userId;
       allow create: if request.auth != null
+        && request.resource.data.keys().hasOnly(['uid', 'email', 'displayName', 'role', 'createdAt'])
         && request.auth.uid == userId
         && request.resource.data.uid == request.auth.uid
         && request.resource.data.role in ['accountant', 'hr', 'sales', 'office', 'designer', 'financier', 'teacher', 'consultant', 'property'];
       allow update: if request.auth != null
         && request.auth.uid == userId
         && request.resource.data.role == resource.data.role
-        && request.resource.data.uid == resource.data.uid;
+        && request.resource.data.uid == resource.data.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName']);
       allow delete: if false;
     }
     match /{document=**} {
