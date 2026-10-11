@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db, firebaseConfigured } from "@/lib/firebase";
-import { Activity, ArrowDownRight, ArrowRight, ArrowUpRight, Bell, BriefcaseBusiness, CalendarDays, Check, ChevronDown, CircleHelp, Clock3, FileText, LayoutDashboard, Menu, MessageSquareText, Search, Settings2, Sparkles, Users, X, LogOut } from "lucide-react";
+import { Activity, ArrowDownRight, ArrowRight, ArrowUpRight, Bell, BriefcaseBusiness, CalendarDays, Check, ChevronDown, Clock3, FileText, LayoutDashboard, Menu, MessageSquareText, Search, Sparkles, Users, X, LogOut } from "lucide-react";
+import WorkspaceTools from "@/components/workspace-tools";
 
 const roles = [
   { id: "accountant", label: "Akuntan", english: "Accountants", description: "Laporan, transaksi, dan kepatuhan keuangan", icon: "◈", accent: "violet", modules: ["Overview", "General Ledger", "Financial Reports", "Tax & Compliance", "AI Data Analytics"] },
@@ -96,7 +97,7 @@ export default function Home() {
         <button className={`nav-item ${activeModule === role.modules[0] ? "active" : ""}`} onClick={() => setActiveModule(role.modules[0])}><LayoutDashboard size={18} /> Ringkasan</button>
         <div className="nav-caption role-caption">DASHBOARD PROFESI <span>9</span></div>
         <div className="role-nav">{roles.filter((item) => item.id === roleId).map((item) => <div key={item.id} className="role-nav-item selected"><span className={`role-symbol ${item.accent}`}>{item.icon}</span><span>{item.label}</span><span className="active-dot" /></div>)}</div>
-        <div className="sidebar-bottom"><button className="nav-item" onClick={() => setNotice("Pusat bantuan akan tersedia pada fase berikutnya.")}><CircleHelp size={18} /> Pusat bantuan</button><button className="nav-item" onClick={() => setNotice("Pengaturan workspace belum terhubung.")}><Settings2 size={18} /> Pengaturan</button><div className="profile-mini"><div className="profile-avatar">I</div><div className="profile-copy"><b>{accountName}</b><small>{role.label}</small></div><button className="icon-button" aria-label="Keluar dari akun" onClick={handleLogout}><LogOut size={17} /></button></div></div>
+        <div className="sidebar-bottom"><WorkspaceTools /><div className="profile-mini"><div className="profile-avatar">I</div><div className="profile-copy"><b>{accountName}</b><small>{role.label}</small></div><button className="icon-button" aria-label="Keluar dari akun" onClick={handleLogout}><LogOut size={17} /></button></div></div>
       </aside>
       {menuOpen && <button className="mobile-scrim" aria-label="Tutup menu" onClick={() => setMenuOpen(false)} />}
       <section className="main-area">
