@@ -118,7 +118,17 @@ export default function Home() {
 }
 
 function moduleSlug(module: string) {
-  return module.toLowerCase().replace(/&/g, "and").replace(/[()]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  const existingSlugs: Record<string, string> = {
+    "Daily Operations": "daily-operations",
+    "Facility & Inventory": "facility-inventory",
+    "Visitor Management": "visitor-management",
+    "Schedules & Announcements": "schedules-announcements",
+    "Sales Pipeline": "sales-pipeline",
+    "Team Performance": "team-performance",
+    "Smart Follow-ups": "smart-follow-ups",
+    "Forecasting & Insights": "forecasting-insights",
+  };
+  return existingSlugs[module] ?? module.toLowerCase().replace(/&/g, "and").replace(/[()]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 }
 
 function moduleDescription(module: string) {
