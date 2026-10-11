@@ -33,7 +33,7 @@ export async function GET(request: Request) {
     if ("error" in auth) return NextResponse.json({ error: auth.error }, { status: auth.status });
     const snapshot = await adminDb().collection("workspaceData").doc(auth.uid).collection("items").get();
     const items = snapshot.docs
-      .map((item) => ({ id: item.id, ...item.data() }))
+      .map((item) => ({ id: item.id, ...item.data() } as { id: string; moduleId?: string; createdAt?: number; [key: string]: unknown }))
       .filter((item) => allowedModules.has(String(item.moduleId)));
     items.sort((a, b) => Number(b.createdAt ?? 0) - Number(a.createdAt ?? 0));
     return NextResponse.json({ items });
