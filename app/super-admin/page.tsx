@@ -4,7 +4,7 @@ import { FormEvent, useCallback, useEffect, useState } from "react";
 import { onAuthStateChanged, signOut, User } from "firebase/auth";
 import { auth, firebaseConfigured } from "@/lib/firebase";
 import { roles } from "@/lib/roles";
-import { ArrowLeft, CheckCircle2, CircleAlert, KeyRound, LoaderCircle, LogOut, Plus, RefreshCw, ShieldCheck, UserRound, UserRoundX, MailCheck } from "lucide-react";
+import { Activity, ArrowLeft, CheckCircle2, CircleAlert, KeyRound, LoaderCircle, LogOut, Plus, RefreshCw, ShieldCheck, UserRound, UserRoundX, MailCheck } from "lucide-react";
 import Link from "next/link";
 
 type AdminUser = { uid: string; email: string; profileEmail: string; displayName: string; role: string; disabled: boolean; createdAt: string };
@@ -86,7 +86,7 @@ export default function SuperAdminPage() {
   if (!sessionReady) return <main style={styles.center}><LoaderCircle /> Memeriksa sesi admin...</main>;
 
   return <main style={styles.page}>
-    <header style={styles.header}><Link href="/dashboard" style={styles.back}><ArrowLeft size={17} /> Dashboard</Link><div style={styles.brand}><ShieldCheck size={22} /> Delta <span>Super Admin</span></div><Link href="/super-admin/password-reset" style={styles.secondary}><KeyRound size={16} /> Reset password</Link><button style={styles.secondary} onClick={logout}><LogOut size={16} /> Keluar</button></header>
+    <header style={styles.header}><Link href="/dashboard" style={styles.back}><ArrowLeft size={17} /> Dashboard</Link><div style={styles.brand}><ShieldCheck size={22} /> Delta <span>Super Admin</span></div><Link href="/super-admin/achievements" style={styles.secondary}><Activity size={16} /> Pencapaian perusahaan</Link><Link href="/super-admin/password-reset" style={styles.secondary}><KeyRound size={16} /> Reset password</Link><button style={styles.secondary} onClick={logout}><LogOut size={16} /> Keluar</button></header>
     <section style={styles.content}>
       <div style={styles.eyebrow}>PENGELOLAAN SISTEM</div><h1 style={styles.title}>Manajemen akun</h1><p style={styles.subtitle}>Kelola akun pengguna dan akses workspace dari satu tempat.</p>
       <div style={styles.summary}><div style={styles.summaryIcon}><UserRound size={21} /></div><div><small>Total akun terdaftar</small><strong>{rows.length}</strong></div><div style={styles.summaryDivider} /><div><small>Akun aktif</small><strong>{rows.filter((item) => !item.disabled).length}</strong></div><button style={styles.primary} onClick={() => setShowCreate(!showCreate)}><Plus size={17} /> Buat akun</button></div>
