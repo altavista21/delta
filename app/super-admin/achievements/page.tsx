@@ -85,7 +85,7 @@ function Metric({ icon, label, value }: { icon: React.ReactNode; label: string; 
   return <article style={s.metric}><span style={s.metricIcon}>{icon}</span><span style={s.metricLabel}>{label}</span><strong>{value}</strong></article>;
 }
 
-const s = {
+const s: Record<string, React.CSSProperties> = {
   page: { minHeight: "100vh", background: "#f7f8fc", color: "#202438", fontFamily: "Arial, sans-serif" },
   center: { minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, color: "#5d6277" },
   header: { minHeight: 68, padding: "0 5vw", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, background: "#fff", borderBottom: "1px solid #e9ebf2" },
