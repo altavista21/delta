@@ -374,7 +374,55 @@ export default function OfficeModulePage() {
   const params = useParams<{ moduleId: string }>();
   const router = useRouter();
   const moduleId = params.moduleId as ModuleId;
-  const config = moduleConfig[moduleId];
+  const professionByModule: Record<string, string> = {
+  "sales-pipeline": "Manajer Penjualan",
+  "team-performance": "Manajer Penjualan",
+  "smart-follow-ups": "Manajer Penjualan",
+  "forecasting-insights": "Manajer Penjualan",
+  "forecasting-and-insights": "Manajer Penjualan",
+  overview: "Akuntan",
+  "general-ledger": "Akuntan",
+  "financial-reports": "Akuntan",
+  "tax-compliance": "Akuntan",
+  "tax-and-compliance": "Akuntan",
+  "ai-data-analytics": "Akuntan",
+  "hr-metrics": "Profesional SDM",
+  "recruitment-ats": "Profesional SDM",
+  "employee-experience": "Profesional SDM",
+  "policy-generator": "Profesional SDM",
+  "daily-operations": "Manajer Kantor",
+  "facility-inventory": "Manajer Kantor",
+  "visitor-management": "Manajer Kantor",
+  "schedules-announcements": "Manajer Kantor",
+  "creative-workspace": "Desainer",
+  "ai-idea-generator": "Desainer",
+  "asset-library": "Desainer",
+  "client-approvals": "Desainer",
+  "market-data-portfolio": "Ahli Keuangan / Investor",
+  "market-data-and-portfolio": "Ahli Keuangan / Investor",
+  "scenario-modeling": "Ahli Keuangan / Investor",
+  "risk-assessment": "Ahli Keuangan / Investor",
+  "data-driven-decisions": "Ahli Keuangan / Investor",
+  "classes-students": "Guru / Pengajar",
+  "classes-and-students": "Guru / Pengajar",
+  "lesson-plan-creator": "Guru / Pengajar",
+  "assignments-grading": "Guru / Pengajar",
+  "assignments-and-grading": "Guru / Pengajar",
+  "interactive-resources": "Guru / Pengajar",
+  "client-engagement": "Konsultan",
+  "client-and-engagement": "Konsultan",
+  "industry-knowledge-base": "Konsultan",
+  "time-invoicing": "Konsultan",
+  "strategic-reports": "Konsultan",
+  "property-listings": "Agen Properti",
+  "client-crm-leads": "Agen Properti",
+  "client-crm-and-leads": "Agen Properti",
+  "showings-calendar": "Agen Properti",
+  "contracts-documents": "Agen Properti",
+  "contracts-and-documents": "Agen Properti",
+};
+const professionLabel = professionByModule[moduleId] ?? "Workspace";
+const config = moduleConfig[moduleId];
   const [userId, setUserId] = useState("");
   const [records, setRecords] = useState<WorkspaceRecord[]>([]);
   const [title, setTitle] = useState("");
@@ -496,7 +544,7 @@ export default function OfficeModulePage() {
   }
 
   if (!config) {
-    return <main className="module-page"><section className="module-empty"><h1>Modul tidak ditemukan</h1><p>Pilih modul dari dashboard Manajer Kantor.</p><button onClick={() => router.push("/dashboard")}>Kembali ke dashboard</button></section></main>;
+    return <main className="module-page"><section className="module-empty"><h1>Modul tidak ditemukan</h1><p>Pilih modul dari dashboard workspace Anda.</p><button onClick={() => router.push("/dashboard")}>Kembali ke dashboard</button></section></main>;
   }
 
   const Icon = config.icon;
@@ -509,7 +557,7 @@ export default function OfficeModulePage() {
         <WorkspaceTools variant="inline" />
       </header>
       <div className="module-content">
-        <div className="module-eyebrow">MANAJER KANTOR / MODUL OPERASIONAL</div>
+        <div className="module-eyebrow">{professionLabel.toLocaleUpperCase("id-ID")} / MODUL {professionLabel.toLocaleUpperCase("id-ID")}</div>
         <section className="module-hero">
           <div className="module-hero-icon"><Icon size={25} /></div>
           <div><h1>{config.title}</h1><p>{config.description}</p></div>
