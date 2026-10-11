@@ -168,9 +168,28 @@ export async function GET(request: Request) {
       const data = doc.data();
       return { id: doc.id, moduleId: String(data.moduleId ?? ""), title: String(data.title ?? ""), detail: String(data.detail ?? ""), status: String(data.status ?? "pending"), priority: String(data.priority ?? "normal"), date: String(data.date ?? ""), createdAt: Number(data.createdAt ?? 0), updatedAt: Number(data.updatedAt ?? 0) } satisfies WorkspaceItem;
     }).filter((item) => allowed.has(item.moduleId) && (!moduleId || item.moduleId === moduleId)).sort((a, b) => Number(b.createdAt ?? 0) - Number(a.createdAt ?? 0));
+    const propertyIntegration = context.role === "sales" ? (() => {
+      return null;
+    })() : undefined;
+    const linkedPropertyItems = context.role === "sales"
+      ? (await companyItems()).filter((item) => ["property-listings", "client-crm-and-leads", "showings-calendar", "contracts-and-documents"].includes(String(item.moduleId)))
+      : [];
+    const byModule = (id: string) => linkedPropertyItems.filter((item) => item.moduleId === id);
+    const propertySalesSummary = context.role === "sales" ? {
+      listings: byModule("property-listings").length,
+      listingsClosed: byModule("property-listings").filter((item) => ["terjual/disewakan", "terjual", "disewakan"].includes(String(item.status).trim().toLowerCase())).length,
+      leads: byModule("client-crm-and-leads").length,
+      leadsClosed: byModule("client-crm-and-leads").filter((item) => String(item.status).trim().toLowerCase() === "selesai").length,
+      showings: byModule("showings-calendar").length,
+      showingsCompleted: byModule("showings-calendar").filter((item) => String(item.status).trim().toLowerCase() === "selesai").length,
+      contracts: byModule("contracts-and-documents").length,
+      contractsSigned: byModule("contracts-and-documents").filter((item) => String(item.status).trim().toLowerCase() === "ditandatangani").length,
+      note: linkedPropertyItems.length >= 5000 ? "Ringkasan properti dibatasi pada 5.000 catatan." : undefined,
+    } : undefined;
     return NextResponse.json({
       scope: "personal",
       moduleId: moduleId || null,
+      ...(propertySalesSummary ? { propertySalesSummary } : {}),
       metrics: metrics(items),
       modules: summarizeModules(items, moduleId ? [moduleId] : (moduleIds[context.role] ?? [])),
       items: items.slice(0, 200),
