@@ -62,7 +62,7 @@ export default function DeltaAiPage() {
       });
       const result = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(typeof result.error === "string" ? result.error : "Pesan gagal diproses.");
-      setMessages((current) => [...current, { role: "model", text: result.answer }].slice(-12));
+      setMessages((current) => [...current, { role: "model" as const, text: String(result.answer) }].slice(-12));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Tidak dapat terhubung ke Delta AI.");
     } finally {
