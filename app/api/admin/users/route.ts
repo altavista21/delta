@@ -19,6 +19,7 @@ export async function GET(request: Request) {
       return {
         uid: user.uid,
         email: user.email ?? "",
+        profileEmail: typeof profile?.email === "string" ? profile.email.trim().toLowerCase() : "",
         displayName: user.displayName ?? profile?.displayName ?? "",
         role: typeof profile?.role === "string" ? profile.role : "unassigned",
         disabled: user.disabled,
@@ -41,7 +42,7 @@ export async function POST(request: Request) {
     const password = typeof body.password === "string" ? body.password : "";
     const displayName = typeof body.displayName === "string" ? body.displayName.trim() : "";
     const role = typeof body.role === "string" ? body.role : "";
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    if (!email || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) {
       return NextResponse.json({ error: "Email tidak valid." }, { status: 400 });
     }
     if (password.length < 8) return NextResponse.json({ error: "Kata sandi minimal 8 karakter." }, { status: 400 });
@@ -73,15 +74,63 @@ export async function PATCH(request: Request) {
     if (!admin) return NextResponse.json({ error: "Akses ditolak." }, { status: 403 });
     const body = await request.json();
     const uid = typeof body.uid === "string" ? body.uid : "";
+    if (!uid) return NextResponse.json({ error: "UID akun wajib diisi." }, { status: 400 });
+
+    if (body.action === "syncEmailFromProfile") {
+      if (uid === admin.uid) {
+        return NextResponse.json({ error: "Email akun Super Admin yang sedang digunakan tidak dapat disinkronkan dari halaman ini." }, { status: 400 });
+      }
+      const db = adminDb();
+      const profileRef = db.collection("users").doc(uid);
+      const profileSnapshot = await profileRef.get();
+      if (!profileSnapshot.exists) return NextResponse.json({ error: "Profil Firestore untuk akun ini tidak ditemukan." }, { status: 404 });
+      const profile = profileSnapshot.data()!;
+      const targetEmail = typeof profile.email === "string" ? profile.email.trim().toLowerCase() : "";
+      if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(targetEmail)) {
+        return NextResponse.json({ error: "Email di Firestore tidak valid." }, { status: 400 });
+      }
+
+      const account = await adminAuth().getUser(uid);
+      if ((account.email ?? "").trim().toLowerCase() === targetEmail) {
+        return NextResponse.json({ ok: true, message: "Email Firebase Authentication dan Firestore sudah sama." });
+      }
+
+      try {
+        const existing = await adminAuth().getUserByEmail(targetEmail);
+        if (existing.uid !== uid) {
+          return NextResponse.json({ error: "Email tujuan sudah digunakan oleh akun Firebase lain. Tidak ada perubahan yang dilakukan." }, { status: 409 });
+        }
+      } catch (error) {
+        if ((error as { code?: string }).code !== "auth/user-not-found") throw error;
+      }
+
+      await adminAuth().updateUser(uid, { email: targetEmail, emailVerified: false });
+      try {
+        await profileRef.set({ email: targetEmail, emailUpdatedAt: new Date() }, { merge: true });
+      } catch (error) {
+        await adminAuth().updateUser(uid, {
+          email: account.email,
+          emailVerified: account.emailVerified,
+        }).catch(() => undefined);
+        throw error;
+      }
+      return NextResponse.json({ ok: true, message: "Email berhasil disinkronkan ke Firebase Authentication dan Firestore. Pengguna perlu login kembali dengan email baru." });
+    }
+
     const disabled = body.disabled;
-    if (!uid || typeof disabled !== "boolean") {
-      return NextResponse.json({ error: "UID dan status akun wajib diisi." }, { status: 400 });
+    if (typeof disabled !== "boolean") {
+      return NextResponse.json({ error: "Status akun wajib diisi." }, { status: 400 });
     }
     if (uid === admin.uid) return NextResponse.json({ error: "Akun Super Admin tidak dapat dinonaktifkan dari halaman ini." }, { status: 400 });
     await adminAuth().updateUser(uid, { disabled });
     return NextResponse.json({ ok: true });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Status akun gagal diubah.";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const code = (error as { code?: string }).code;
+    const message = code === "auth/user-not-found"
+      ? "Akun Firebase Authentication tidak ditemukan."
+      : code === "auth/email-already-exists"
+        ? "Email tujuan sudah digunakan akun lain."
+        : error instanceof Error ? error.message : "Perubahan akun gagal.";
+    return NextResponse.json({ error: message }, { status: code === "auth/email-already-exists" ? 409 : 500 });
   }
 }
