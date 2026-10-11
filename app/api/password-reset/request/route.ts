@@ -31,8 +31,9 @@ export async function POST(request: Request) {
       if (!account.disabled) {
         const db = adminDb();
         const pending = await db.collection("passwordResetRequests")
-          .where("email", "==", email).where("status", "==", "pending").limit(1).get();
-        if (pending.empty) {
+          .where("email", "==", email).limit(10).get();
+        const hasPending = pending.docs.some((doc) => doc.get("status") === "pending");
+        if (!hasPending) {
           await db.collection("passwordResetRequests").add({
             email,
             uid: account.uid,
