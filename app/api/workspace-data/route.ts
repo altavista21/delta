@@ -114,6 +114,7 @@ async function companyItems(moduleId?: string) {
   const profilesSnapshot = await adminDb().collection("users").get();
   const profiles = new Map(profilesSnapshot.docs.map((doc) => [doc.id, String(doc.get("displayName") ?? "Pengguna")]));
   return snapshot.docs
+    .filter((doc) => doc.ref.parent.parent?.parent?.id === "workspaceData")
     .map((doc) => {
       const ownerUid = doc.ref.parent.parent?.id ?? "";
       const data = doc.data();
