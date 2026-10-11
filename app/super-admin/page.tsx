@@ -21,7 +21,7 @@ export default function SuperAdminPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState(roles[0].id);
+  const [role, setRole] = useState<string>(roles[0].id);
 
   const request = useCallback(async (path: string, init: RequestInit = {}) => {
     if (!user) throw new Error("Sesi login belum siap.");
