@@ -4,7 +4,7 @@ import { FormEvent, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { onAuthStateChanged } from "firebase/auth";
-import { ArrowLeft, ArrowUp, Bot, Check, LoaderCircle, MessageSquareText, Sparkles, UserRound } from "lucide-react";
+import { ArrowLeft, ArrowUp, Bot, LoaderCircle, Sparkles, UserRound } from "lucide-react";
 import { auth, firebaseConfigured } from "@/lib/firebase";
 
 type Message = { role: "user" | "model"; text: string };
@@ -46,14 +46,15 @@ export default function DeltaAiPage() {
   async function sendMessage(event?: FormEvent<HTMLFormElement>, suggestedText?: string) {
     event?.preventDefault();
     const text = (suggestedText ?? input).trim();
-    if (!text || loading || !auth?.currentUser) return;
+    const user = auth?.currentUser;
+    if (!text || loading || !user) return;
     setError("");
     setInput("");
     const nextMessages: Message[] = [...messages, { role: "user", text }].slice(-12);
     setMessages(nextMessages);
     setLoading(true);
     try {
-      const token = await auth.currentUser.getIdToken();
+      const token = await user.getIdToken();
       const response = await fetch("/api/ai", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
