@@ -38,8 +38,8 @@ export function adminDb() {
 }
 
 export async function requireSuperAdmin(request: Request) {
-  const expectedUid = process.env.KONGKO_SUPERADMIN_UID;
-  if (!expectedUid) throw new Error("KONGKO_SUPERADMIN_UID belum dikonfigurasi.");
+  const expectedUid = process.env.DELTA_SUPERADMIN_UID;
+  if (!expectedUid) throw new Error("DELTA_SUPERADMIN_UID belum dikonfigurasi.");
   const header = request.headers.get("authorization") ?? "";
   const token = header.startsWith("Bearer ") ? header.slice(7) : "";
   if (!token) return null;
