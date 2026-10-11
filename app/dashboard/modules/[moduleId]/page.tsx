@@ -399,12 +399,15 @@ export default function OfficeModulePage() {
   "asset-library": "Desainer",
   "client-approvals": "Desainer",
   "market-data-portfolio": "Ahli Keuangan / Investor",
+  "market-data-and-portfolio": "Ahli Keuangan / Investor",
   "scenario-modeling": "Ahli Keuangan / Investor",
   "risk-assessment": "Ahli Keuangan / Investor",
   "data-driven-decisions": "Ahli Keuangan / Investor",
   "classes-students": "Guru / Pengajar",
+  "classes-and-students": "Guru / Pengajar",
   "lesson-plan-creator": "Guru / Pengajar",
   "assignments-grading": "Guru / Pengajar",
+  "assignments-and-grading": "Guru / Pengajar",
   "interactive-resources": "Guru / Pengajar",
   "client-engagement": "Konsultan",
   "client-and-engagement": "Konsultan",
@@ -413,8 +416,10 @@ export default function OfficeModulePage() {
   "strategic-reports": "Konsultan",
   "property-listings": "Agen Properti",
   "client-crm-leads": "Agen Properti",
+  "client-crm-and-leads": "Agen Properti",
   "showings-calendar": "Agen Properti",
   "contracts-documents": "Agen Properti",
+  "contracts-and-documents": "Agen Properti",
 };
 const professionLabel = professionByModule[moduleId] ?? "Workspace";
 const config = moduleConfig[moduleId];
