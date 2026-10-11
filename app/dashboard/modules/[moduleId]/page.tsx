@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { onAuthStateChanged } from "firebase/auth";
-import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, Timestamp } from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
 import { ArrowLeft, CalendarDays, CheckCircle2, ClipboardList, LoaderCircle, Package, Plus, Trash2, Users, Megaphone, RefreshCw } from "lucide-react";
 import { auth, db, firebaseConfigured } from "@/lib/firebase";
 
@@ -91,10 +91,13 @@ export default function OfficeModulePage() {
   const activeRecords = useMemo(() => records.filter((record) => record.moduleId === moduleId), [records, moduleId]);
 
   async function loadRecords(uid: string) {
-    if (!db) return;
-    const snapshot = await getDocs(collection(db, "workspaceData", uid, "items"));
-    const loaded = snapshot.docs.map((item) => ({ id: item.id, ...item.data() } as WorkspaceRecord));
-    setRecords(loaded.filter((item) => item.moduleId in moduleConfig));
+    const currentUser = auth?.currentUser;
+    if (!currentUser || currentUser.uid !== uid) return;
+    const token = await currentUser.getIdToken();
+    const response = await fetch("/api/workspace/items", { headers: { Authorization: `Bearer ${token}` } });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || "Data modul gagal dimuat.");
+    setRecords((data.items ?? []).filter((item: WorkspaceRecord) => item.moduleId in moduleConfig));
   }
 
   useEffect(() => {
@@ -132,7 +135,7 @@ export default function OfficeModulePage() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!userId || !db || !config) return;
+    if (!userId || !auth?.currentUser || !config) return;
     if (!title.trim()) {
       setError("Nama atau judul wajib diisi.");
       return;
@@ -141,16 +144,22 @@ export default function OfficeModulePage() {
     setError("");
     setNotice("");
     try {
-      await addDoc(collection(db, "workspaceData", userId, "items"), {
-        moduleId,
-        title: title.trim(),
-        detail: detail.trim(),
-        status,
-        priority: config.hasPriority ? priority : "",
-        date: config.hasDate ? date : "",
-        quantity: config.hasQuantity ? quantity : "",
-        createdAt: Timestamp.now().toMillis(),
+      const token = await auth.currentUser.getIdToken();
+      const response = await fetch("/api/workspace/items", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          moduleId,
+          title: title.trim(),
+          detail: detail.trim(),
+          status,
+          priority: config.hasPriority ? priority : "",
+          date: config.hasDate ? date : "",
+          quantity: config.hasQuantity ? quantity : "",
+        }),
       });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || "Gagal menyimpan data.");
       await loadRecords(userId);
       setTitle("");
       setDetail("");
@@ -167,13 +176,20 @@ export default function OfficeModulePage() {
   }
 
   async function handleDelete(recordId: string) {
-    if (!userId || !db) return;
+    if (!userId || !auth?.currentUser) return;
     try {
-      await deleteDoc(doc(db, "workspaceData", userId, "items", recordId));
+      const token = await auth.currentUser.getIdToken();
+      const response = await fetch("/api/workspace/items", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ id: recordId }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || "Data tidak bisa dihapus.");
       setRecords((current) => current.filter((record) => record.id !== recordId));
       setNotice("Data berhasil dihapus.");
-    } catch {
-      setError("Data tidak bisa dihapus. Periksa Firestore Rules.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Data tidak bisa dihapus.");
     }
   }
 
