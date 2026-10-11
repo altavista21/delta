@@ -15,38 +15,6 @@ service cloud.firestore {
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName']);
       allow delete: if false;
     }
-
-    match /workspaceData/{userId}/items/{itemId} {
-      function ownsWorkspace() {
-        return request.auth != null && request.auth.uid == userId;
-      }
-      function validWorkspaceItem() {
-        return request.resource.data.keys().hasOnly([
-            'moduleId', 'title', 'detail', 'status', 'priority', 'date', 'quantity', 'createdAt'
-          ])
-          && request.resource.data.moduleId in [
-            'daily-operations', 'facility-inventory', 'visitor-management', 'schedules-announcements'
-          ]
-          && request.resource.data.title is string
-          && request.resource.data.title.size() > 0
-          && request.resource.data.title.size() <= 120
-          && request.resource.data.detail is string
-          && request.resource.data.detail.size() <= 2000
-          && request.resource.data.status is string
-          && request.resource.data.status.size() <= 40
-          && request.resource.data.priority is string
-          && request.resource.data.priority.size() <= 20
-          && request.resource.data.date is string
-          && request.resource.data.date.size() <= 20
-          && request.resource.data.quantity is string
-          && request.resource.data.quantity.size() <= 10
-          && request.resource.data.createdAt is int;
-      }
-      allow read, delete: if ownsWorkspace();
-      allow create: if ownsWorkspace() && validWorkspaceItem();
-      allow update: if false;
-    }
-
     match /{document=**} {
       allow read, write: if false;
     }
