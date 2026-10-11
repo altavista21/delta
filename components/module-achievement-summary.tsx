@@ -47,7 +47,7 @@ const labels: Record<string, { total: string; completed: string; active: string;
   "overview": { total: "Catatan", completed: "Selesai", active: "Belum selesai", overdue: "Terlambat", progress: "Penyelesaian catatan" },
 };
 
-export default function ModuleAchievementSummary({ moduleId }: { moduleId: string }) {
+export default function ModuleAchievementSummary({ moduleId, refreshKey = 0 }: { moduleId: string; refreshKey?: number }) {
   const [data, setData] = useState<Summary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -67,7 +67,7 @@ export default function ModuleAchievementSummary({ moduleId }: { moduleId: strin
     finally { setLoading(false); }
   }, [moduleId]);
 
-  useEffect(() => { void load(); }, [load]);
+  useEffect(() => { void load(); }, [load, refreshKey]);
 
   const metrics = data?.metrics;
   return <section style={s.card}>
