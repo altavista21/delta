@@ -1,4 +1,3 @@
-import { createHash } from "node:crypto";
 import { NextResponse } from "next/server";
 import { adminAuth, adminDb } from "@/lib/firebase-admin";
 
@@ -21,33 +20,36 @@ export async function POST(request: Request) {
     const body = await request.json();
     const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
     const reason = typeof body.reason === "string" ? body.reason.trim().slice(0, 500) : "";
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) {
       return NextResponse.json({ error: "Masukkan alamat email yang valid." }, { status: 400 });
     }
 
-    // Keep the public response identical whether or not the account exists.
-    try {
-      const account = await adminAuth().getUserByEmail(email);
-      if (!account.disabled) {
-        const db = adminDb();
-        const pending = await db.collection("passwordResetRequests")
-          .where("email", "==", email).limit(10).get();
-        const hasPending = pending.docs.some((doc) => doc.get("status") === "pending");
-        if (!hasPending) {
-          await db.collection("passwordResetRequests").add({
-            email,
-            uid: account.uid,
-            reason,
-            status: "pending",
-            createdAt: new Date(),
-          });
-        }
+    // Always record a valid request so it is visible to Super Admin.
+    // Do not disclose whether an email belongs to an account on this public endpoint.
+    const db = adminDb();
+    const pending = await db.collection("passwordResetRequests")
+      .where("email", "==", email).limit(10).get();
+    const hasPending = pending.docs.some((doc) => doc.get("status") === "pending");
+
+    if (!hasPending) {
+      let uid: string | undefined;
+      try {
+        const account = await adminAuth().getUserByEmail(email);
+        uid = account.uid;
+      } catch (error) {
+        if ((error as { code?: string }).code !== "auth/user-not-found") throw error;
       }
-    } catch (error) {
-      if ((error as { code?: string }).code !== "auth/user-not-found") throw error;
+
+      await db.collection("passwordResetRequests").add({
+        email,
+        ...(uid ? { uid } : {}),
+        reason,
+        status: "pending",
+        createdAt: new Date(),
+      });
     }
 
-    return NextResponse.json({ ok: true, message: "Jika akun cocok, permintaan akan diteruskan kepada Super Admin." });
+    return NextResponse.json({ ok: true, message: "Permintaan telah dicatat dan akan diperiksa oleh Super Admin." });
   } catch {
     return NextResponse.json({ error: "Permintaan belum dapat diproses. Coba lagi nanti." }, { status: 500 });
   }
