@@ -58,3 +58,7 @@
 .module-spin{animation:module-spin 1s linear infinite}@keyframes module-spin{to{transform:rotate(360deg)}}
 @media(max-width:820px){.module-content{padding:26px 16px 38px}.module-work-grid{grid-template-columns:1fr}.module-topbar{padding:0 16px}.module-hero h1{font-size:23px}.module-panel{padding:17px}}
 @media(max-width:420px){.module-form-row{grid-template-columns:1fr}.module-hero{align-items:flex-start}.module-hero-icon{width:47px;height:47px}.module-brand{font-size:13px}}
+
+
+/* Password recovery request UI */
+.auth-textarea{width:100%;resize:vertical;min-height:86px;border:1px solid #e7e8f0;border-radius:10px;padding:12px;background:#fff;color:#34364b;font:400 12px 'DM Sans',sans-serif;outline-color:#7162df;line-height:1.6}.auth-textarea:focus{border-color:#a89df1;box-shadow:0 0 0 3px #7162df12}.auth-success{display:flex;align-items:flex-start;gap:9px;padding:12px;border:1px solid #cce8d7;background:#f1fbf5;color:#247346;border-radius:10px;font-size:12px;line-height:1.7}.auth-success svg{flex-shrink:0;margin-top:2px}
