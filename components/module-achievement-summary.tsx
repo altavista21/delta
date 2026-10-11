@@ -5,7 +5,8 @@ import { auth } from "@/lib/firebase";
 import { Activity, CalendarClock, CheckCircle2, Clock3, LoaderCircle, RefreshCw } from "lucide-react";
 
 type Metrics = { total: number; completed: number; active: number; overdue: number; completionRate: number };
-type Summary = { scope: "personal" | "company"; moduleId: string; metrics: Metrics; note?: string };
+type PropertySalesSummary = { listings: number; listingsClosed: number; leads: number; leadsClosed: number; showings: number; showingsCompleted: number; contracts: number; contractsSigned: number; note?: string };
+type Summary = { scope: "personal" | "company"; moduleId: string; metrics: Metrics; propertySalesSummary?: PropertySalesSummary; note?: string };
 
 const labels: Record<string, { total: string; completed: string; active: string; overdue: string; progress: string }> = {
   "general-ledger": { total: "Transaksi tercatat", completed: "Transaksi selesai", active: "Perlu ditinjau", overdue: "Tenggat lewat", progress: "Penyelesaian transaksi" },
@@ -82,9 +83,24 @@ export default function ModuleAchievementSummary({ moduleId, refreshKey = 0 }: {
       </div>
       <div style={s.progressHead}><span>{copy.progress}</span><b>{metrics?.completionRate ?? 0}%</b></div><div style={s.track}><div style={{ ...s.fill, width: `${metrics?.completionRate ?? 0}%` }} /></div>
       {metrics?.total === 0 && <p style={s.empty}>Belum ada data tersimpan pada modul ini. Tambahkan data melalui formulir modul agar pencapaian mulai terhitung.</p>}
+      {data?.propertySalesSummary && <div style={s.propertyPanel}>
+        <b style={s.propertyHeading}>Ringkasan penjualan dari Agen Properti</b>
+        <p style={s.propertyIntro}>Angka gabungan seluruh agen untuk membantu pemantauan penjualan.</p>
+        <div style={s.propertyGrid}>
+          <PropertyMetric label="Listing" value={data.propertySalesSummary.listings} detail={`${data.propertySalesSummary.listingsClosed} terjual/disewakan`} />
+          <PropertyMetric label="Calon klien" value={data.propertySalesSummary.leads} detail={`${data.propertySalesSummary.leadsClosed} selesai`} />
+          <PropertyMetric label="Kunjungan" value={data.propertySalesSummary.showings} detail={`${data.propertySalesSummary.showingsCompleted} selesai`} />
+          <PropertyMetric label="Kontrak" value={data.propertySalesSummary.contracts} detail={`${data.propertySalesSummary.contractsSigned} ditandatangani`} />
+        </div>
+        {data.propertySalesSummary.note && <p style={s.note}>{data.propertySalesSummary.note}</p>}
+      </div>}
       {data?.note && <p style={s.note}>{data.note}</p>}
     </>}
   </section>;
+}
+
+function PropertyMetric({ label, value, detail }: { label: string; value: number; detail: string }) {
+  return <div style={s.propertyMetric}><span>{label}</span><b>{value}</b><small>{detail}</small></div>;
 }
 
 function Metric({ icon, label, value }: { icon: React.ReactNode; label: string; value: number }) {
