@@ -4,12 +4,24 @@ import { adminAuth, adminDb } from "@/lib/firebase-admin";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const allowedModules = new Set([
+const officeModules = new Set([
   "daily-operations",
   "facility-inventory",
   "visitor-management",
   "schedules-announcements",
 ]);
+const salesModules = new Set([
+  "sales-pipeline",
+  "team-performance",
+  "smart-follow-ups",
+  "forecasting-insights",
+]);
+
+function canUseModule(moduleId: string, role: string) {
+  if (role === "superadmin") return officeModules.has(moduleId) || salesModules.has(moduleId);
+  if (role === "sales") return salesModules.has(moduleId);
+  return role === "office" && officeModules.has(moduleId);
+}
 
 async function authorize(request: Request) {
   const header = request.headers.get("authorization") ?? "";
@@ -18,10 +30,11 @@ async function authorize(request: Request) {
   try {
     const decoded = await adminAuth().verifyIdToken(token, true);
     const profile = await adminDb().collection("users").doc(decoded.uid).get();
-    if (!profile.exists || !["office", "superadmin"].includes(profile.get("role"))) {
-      return { error: "Akses modul Manajer Kantor ditolak.", status: 403 as const };
+    const role = String(profile.get("role") ?? "");
+    if (!profile.exists || !["office", "sales", "superadmin"].includes(role)) {
+      return { error: "Akses modul ditolak.", status: 403 as const };
     }
-    return { uid: decoded.uid };
+    return { uid: decoded.uid, role };
   } catch {
     return { error: "Sesi tidak valid atau akun dinonaktifkan. Silakan login kembali.", status: 401 as const };
   }
@@ -34,7 +47,7 @@ export async function GET(request: Request) {
     const snapshot = await adminDb().collection("workspaceData").doc(auth.uid).collection("items").get();
     const items = snapshot.docs
       .map((item) => ({ id: item.id, ...item.data() } as { id: string; moduleId?: string; createdAt?: number; [key: string]: unknown }))
-      .filter((item) => allowedModules.has(String(item.moduleId)));
+      .filter((item) => canUseModule(String(item.moduleId), auth.role));
     items.sort((a, b) => Number(b.createdAt ?? 0) - Number(a.createdAt ?? 0));
     return NextResponse.json({ items });
   } catch {
@@ -54,7 +67,7 @@ export async function POST(request: Request) {
     const priority = typeof body.priority === "string" ? body.priority : "";
     const date = typeof body.date === "string" ? body.date : "";
     const quantity = typeof body.quantity === "string" ? body.quantity : "";
-    if (!allowedModules.has(moduleId)) return NextResponse.json({ error: "Modul tidak valid." }, { status: 400 });
+    if (!canUseModule(moduleId, auth.role)) return NextResponse.json({ error: "Modul tidak valid atau akses ditolak." }, { status: 400 });
     if (!title || title.length > 120 || detail.length > 2000 || status.length > 40 || priority.length > 20 || date.length > 20 || quantity.length > 10) {
       return NextResponse.json({ error: "Data tidak valid atau melebihi batas karakter." }, { status: 400 });
     }
@@ -75,7 +88,7 @@ export async function DELETE(request: Request) {
     if (!/^[A-Za-z0-9_-]{10,128}$/.test(id)) return NextResponse.json({ error: "ID data tidak valid." }, { status: 400 });
     const ref = adminDb().collection("workspaceData").doc(auth.uid).collection("items").doc(id);
     const snapshot = await ref.get();
-    if (!snapshot.exists || !allowedModules.has(String(snapshot.get("moduleId")))) {
+    if (!snapshot.exists || !canUseModule(String(snapshot.get("moduleId")), auth.role)) {
       return NextResponse.json({ error: "Data tidak ditemukan." }, { status: 404 });
     }
     await ref.delete();
