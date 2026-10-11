@@ -26,6 +26,10 @@ npm install
 npm run dev
 ```
 
+## Firebase project
+
+Configured for Firebase project ID `delta-cd031`. Email/Password sign-in must be enabled in Firebase Authentication, and Firestore must be created with the included rules before registration can work.
+
 ## Environment variables
 
 - `NEXT_PUBLIC_FIREBASE_API_KEY`
