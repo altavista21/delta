@@ -168,9 +168,6 @@ export async function GET(request: Request) {
       const data = doc.data();
       return { id: doc.id, moduleId: String(data.moduleId ?? ""), title: String(data.title ?? ""), detail: String(data.detail ?? ""), status: String(data.status ?? "pending"), priority: String(data.priority ?? "normal"), date: String(data.date ?? ""), createdAt: Number(data.createdAt ?? 0), updatedAt: Number(data.updatedAt ?? 0) } satisfies WorkspaceItem;
     }).filter((item) => allowed.has(item.moduleId) && (!moduleId || item.moduleId === moduleId)).sort((a, b) => Number(b.createdAt ?? 0) - Number(a.createdAt ?? 0));
-    const propertyIntegration = context.role === "sales" ? (() => {
-      return null;
-    })() : undefined;
     const linkedPropertyItems = context.role === "sales"
       ? (await companyItems()).filter((item) => ["property-listings", "client-crm-and-leads", "showings-calendar", "contracts-and-documents"].includes(String(item.moduleId)))
       : [];
