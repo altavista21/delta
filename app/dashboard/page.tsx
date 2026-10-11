@@ -56,6 +56,10 @@ export default function Home() {
           return;
         }
         const profile = snapshot.data();
+        if (profile.role === "superadmin") {
+          router.replace("/super-admin");
+          return;
+        }
         const allowedRoles = ["accountant", "hr", "sales", "office", "designer", "financier", "teacher", "consultant", "property"];
         if (!allowedRoles.includes(profile.role)) {
           setAuthError("Profesi akun tidak valid. Hubungi pengelola sistem.");
