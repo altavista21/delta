@@ -118,7 +118,7 @@ export default function Home() {
 }
 
 function moduleSlug(module: string) {
-  return module.toLowerCase().replace(/&/g, "and").replace(/\(.*?\)/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  return module.toLowerCase().replace(/&/g, "and").replace(/[()]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 }
 
 function moduleDescription(module: string) {
