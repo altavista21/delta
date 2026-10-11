@@ -64,7 +64,7 @@ function Metric({ icon, label, value }: { icon: React.ReactNode; label: string; 
   return <div style={s.metric}><span style={s.icon}>{icon}</span><span style={s.label}>{label}</span><b style={s.value}>{value}</b></div>;
 }
 
-const s = {
+const s: Record<string, React.CSSProperties> = {
   card: { background: "#fff", border: "1px solid #e9ebf2", borderRadius: 16, padding: 20, margin: "22px 0 28px" },
   header: { display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 16 },
   eyebrow: { color: "#7162df", fontSize: 10, fontWeight: 800, letterSpacing: 1.3 },
