@@ -5,8 +5,9 @@ import { useRouter } from "next/navigation";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db, firebaseConfigured } from "@/lib/firebase";
-import { Activity, ArrowRight, Bell, CalendarDays, Check, ChevronDown, FileText, Menu, MessageSquareText, Search, Sparkles, Users, X, LogOut } from "lucide-react";
+import { Activity, ArrowRight, Bell, CalendarDays, Check, ChevronDown, FileText, LayoutDashboard, Menu, MessageSquareText, Search, Sparkles, Users, X, LogOut } from "lucide-react";
 import WorkspaceTools from "@/components/workspace-tools";
+import AchievementSummary from "@/components/achievement-summary";
 
 const roles = [
   { id: "accountant", label: "Akuntan", english: "Accountants", description: "Laporan, transaksi, dan kepatuhan keuangan", icon: "◈", accent: "violet", modules: ["General Ledger", "Financial Reports", "Tax & Compliance", "AI Data Analytics"] },
