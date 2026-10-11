@@ -28,10 +28,19 @@ export default function LoginPage() {
       const credential = await signInWithEmailAndPassword(auth, email.trim(), password);
       const profile = await getDoc(doc(db, "users", credential.user.uid));
       if (!profile.exists()) {
+        const token = await credential.user.getIdToken();
+        const bootstrap = await fetch("/api/admin/bootstrap", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (bootstrap.ok) {
+          router.replace("/super-admin");
+          return;
+        }
         router.replace("/register");
         return;
       }
-      router.replace("/dashboard");
+      router.replace(profile.data().role === "superadmin" ? "/super-admin" : "/dashboard");
     } catch (err) {
       const code = (err as { code?: string }).code;
       setError(code === "auth/invalid-credential" || code === "auth/wrong-password" || code === "auth/user-not-found"
