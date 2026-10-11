@@ -42,7 +42,7 @@ export default function AchievementSummary() {
   useEffect(() => { void load(); }, [load]);
 
   const metrics = data?.metrics;
-  return <section style={s.card}>
+  return <section id="achievement-summary" style={s.card}>
     <div style={s.header}><div><div style={s.eyebrow}>{data?.scope === "company" ? "PENCAPAIAN PERUSAHAAN" : "PENCAPAIAN PRIBADI"}</div><h2 style={s.title}>Ringkasan pencapaian</h2><p style={s.subtitle}>{data?.scope === "company" ? "Gabungan catatan yang tersimpan di seluruh akun." : "Perkembangan pekerjaanmu berdasarkan catatan yang benar-benar tersimpan."}</p></div><button style={s.refresh} onClick={() => void load()} disabled={loading} aria-label="Segarkan ringkasan"><RefreshCw size={15} /></button></div>
     {error && <p role="alert" style={s.error}>{error}</p>}
     {loading ? <div style={s.loading}><LoaderCircle size={18} /> Menghitung pencapaian dari data tersimpan...</div> : <>
