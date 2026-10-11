@@ -21,17 +21,13 @@ const roles = [
   { id: "property", label: "Agen Properti", english: "Real Estate Agents", description: "Listing, calon klien, kunjungan, dan dokumen", icon: "⌂", accent: "cyan", modules: ["Property Listings", "Client CRM & Leads", "Showings Calendar", "Contracts & Documents"] },
 ] as const;
 
-const stats = [
-];
-
 export default function Home() {
   const router = useRouter();
   const [roleId, setRoleId] = useState<string>("accountant");
   const [authReady, setAuthReady] = useState(false);
   const [authError, setAuthError] = useState("");
   const [accountName, setAccountName] = useState("Pengguna");
-  const [activeModule, setActiveModule] = useState("Overview");
-  const [query, setQuery] = useState("");
+const [query, setQuery] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
   const [notice, setNotice] = useState("");
   const role = roles.find((item) => item.id === roleId) ?? roles[0];
@@ -92,6 +88,7 @@ export default function Home() {
         <div className="workspace-label">WORKSPACE</div>
         <button className="workspace-switch" onClick={() => setMenuOpen(!menuOpen)}><span className="workspace-avatar">D</span><span className="workspace-copy"><b>Delta Studio</b><small>Personal workspace</small></span><ChevronDown size={16} /></button>
         <div className="nav-caption">MENU UTAMA</div>
+        <button className="nav-item" onClick={() => document.getElementById("achievement-summary")?.scrollIntoView({ behavior: "smooth", block: "start" })}><LayoutDashboard size={18} /> Ringkasan pencapaian</button>
                 <div className="nav-caption role-caption">DASHBOARD PROFESI <span>9</span></div>
         <div className="role-nav">{roles.filter((item) => item.id === roleId).map((item) => <div key={item.id} className="role-nav-item selected"><span className={`role-symbol ${item.accent}`}>{item.icon}</span><span>{item.label}</span><span className="active-dot" /></div>)}</div>
         <div className="sidebar-bottom"><WorkspaceTools /><div className="profile-mini"><div className="profile-avatar">I</div><div className="profile-copy"><b>{accountName}</b><small>{role.label}</small></div><button className="icon-button" aria-label="Keluar dari akun" onClick={handleLogout}><LogOut size={17} /></button></div></div>
@@ -102,6 +99,7 @@ export default function Home() {
         <div className="content">
           <div className="welcome-row"><div><div className="eyebrow"><span className="eyebrow-line" /> RUANG KERJA CERDAS</div><h1>Selamat datang, {accountName} <span className="wave">✳</span></h1><p className="welcome-subtitle">Mari buat hari ini lebih terarah. Pilih modul untuk mulai bekerja.</p></div><button className="date-chip"><CalendarDays size={16} /> Minggu ini <ChevronDown size={14} /></button></div>
           <div className="role-banner"><div className={`role-banner-icon ${role.accent}`}>{role.icon}</div><div className="role-banner-copy"><span>DASHBOARD PROFESI</span><h2>{role.label}</h2><p>{role.description}</p></div><div className="role-current-label"><span>PROFESI AKUN</span><b>{role.label}</b></div></div>
+          <AchievementSummary />
           <div className="section-heading module-heading"><div><h2>Modul {role.label}</h2><p>Pilih area kerja untuk mulai mengelola aktivitas.</p></div><span className="module-count">{filteredModules.length} modul</span></div>
           {filteredModules.length ? <div className="module-grid">{filteredModules.map((module, i) => <button key={module} className="module-card" onClick={() => router.push(`/dashboard/modules/${moduleSlug(module)}`)}><span className={`module-icon ${role.accent}`}>{i === 0 ? <Activity size={20} /> : i === 1 ? <FileText size={20} /> : i === 2 ? <Users size={20} /> : <MessageSquareText size={20} />}</span><span className="module-copy"><b>{module}</b><small>{moduleDescription(module)}</small></span><ArrowRight size={17} className="module-arrow" /></button>)}</div> : <div className="empty-state">Tidak ada modul yang cocok dengan “{query}”.</div>}
           <div className="ai-panel"><div className="ai-orb"><Sparkles size={21} /></div><div className="ai-copy"><span>DELTA AI ASSISTANT</span><h3>Butuh bantuan menyelesaikan sesuatu?</h3><p>Asisten AI akan membantumu menyusun ide, menganalisis informasi, dan mempercepat pekerjaan.</p></div><button className="ai-button" onClick={() => router.push("/dashboard/ai")}>Jelajahi AI <ArrowRight size={16} /></button><div className="ai-decoration" /></div>
