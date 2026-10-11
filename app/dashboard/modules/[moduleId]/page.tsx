@@ -426,6 +426,7 @@ const professionLabel = professionByModule[moduleId] ?? "Workspace";
 const config = moduleConfig[moduleId];
   const [userId, setUserId] = useState("");
   const [records, setRecords] = useState<WorkspaceRecord[]>([]);
+  const [summaryRefresh, setSummaryRefresh] = useState(0);
   const [title, setTitle] = useState("");
   const [detail, setDetail] = useState("");
   const [status, setStatus] = useState("");
@@ -512,6 +513,7 @@ const config = moduleConfig[moduleId];
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.error || "Gagal menyimpan data.");
       await loadRecords(userId);
+      setSummaryRefresh((value) => value + 1);
       setTitle("");
       setDetail("");
       setDate("");
@@ -538,6 +540,7 @@ const config = moduleConfig[moduleId];
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.error || "Data tidak bisa dihapus.");
       setRecords((current) => current.filter((record) => record.id !== recordId));
+      setSummaryRefresh((value) => value + 1);
       setNotice("Data berhasil dihapus.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Data tidak bisa dihapus.");
@@ -564,7 +567,7 @@ const config = moduleConfig[moduleId];
           <div><h1>{config.title}</h1><p>{config.description}</p></div>
         </section>
 
-        <ModuleAchievementSummary moduleId={moduleId} />
+        <ModuleAchievementSummary moduleId={moduleId} refreshKey={summaryRefresh} />
 
         {error && <div className="module-alert" role="alert">{error}</div>}
         {notice && <div className="module-notice" role="status"><CheckCircle2 size={17} /> {notice}</div>}
