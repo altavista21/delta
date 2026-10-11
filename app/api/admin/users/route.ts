@@ -42,7 +42,7 @@ export async function POST(request: Request) {
     const password = typeof body.password === "string" ? body.password : "";
     const displayName = typeof body.displayName === "string" ? body.displayName.trim() : "";
     const role = typeof body.role === "string" ? body.role : "";
-    if (!email || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) {
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return NextResponse.json({ error: "Email tidak valid." }, { status: 400 });
     }
     if (password.length < 8) return NextResponse.json({ error: "Kata sandi minimal 8 karakter." }, { status: 400 });
@@ -86,7 +86,7 @@ export async function PATCH(request: Request) {
       if (!profileSnapshot.exists) return NextResponse.json({ error: "Profil Firestore untuk akun ini tidak ditemukan." }, { status: 404 });
       const profile = profileSnapshot.data()!;
       const targetEmail = typeof profile.email === "string" ? profile.email.trim().toLowerCase() : "";
-      if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(targetEmail)) {
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(targetEmail)) {
         return NextResponse.json({ error: "Email di Firestore tidak valid." }, { status: 400 });
       }
 
