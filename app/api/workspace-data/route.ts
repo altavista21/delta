@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { adminAuth, adminDb } from "@/lib/firebase-admin";
-import { roles } from "@/lib/roles";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -31,8 +30,49 @@ type WorkspaceItem = {
   ownerName?: string;
 };
 
+const completedStatuses: Record<string, string[]> = {
+  "general-ledger": ["selesai"],
+  "financial-reports": ["final"],
+  "tax-and-compliance": ["selesai"],
+  "ai-data-analytics": ["selesai"],
+  "hr-metrics": ["selesai"],
+  "recruitment-ats": ["ditutup"],
+  "employee-experience": ["selesai"],
+  "policy-generator": ["disetujui"],
+  "sales-pipeline": ["menang"],
+  "team-performance": ["sesuai target", "melampaui target"],
+  "smart-follow-ups": ["selesai"],
+  "forecasting-insights": ["final"],
+  "daily-operations": ["selesai"],
+  "facility-inventory": ["baik"],
+  "visitor-management": ["selesai"],
+  "schedules-announcements": ["selesai"],
+  "creative-workspace": ["selesai"],
+  "ai-idea-generator": ["dipilih"],
+  "asset-library": ["siap digunakan"],
+  "client-approvals": ["disetujui"],
+  "market-data-and-portfolio": ["dipantau"],
+  "scenario-modeling": ["final"],
+  "risk-assessment": ["ditutup"],
+  "data-driven-decisions": ["diputuskan"],
+  "classes-and-students": ["aktif"],
+  "lesson-plan-creator": ["selesai"],
+  "assignments-and-grading": ["selesai"],
+  "interactive-resources": ["siap digunakan"],
+  "client-and-engagement": ["selesai"],
+  "industry-knowledge-base": ["ditinjau"],
+  "time-and-invoicing": ["lunas"],
+  "strategic-reports": ["final"],
+  "property-listings": ["terjual/disewakan"],
+  "client-crm-and-leads": ["selesai"],
+  "showings-calendar": ["selesai"],
+  "contracts-and-documents": ["ditandatangani"],
+};
+
 function isCompleted(item: WorkspaceItem) {
-  return ["completed", "complete", "done", "finished", "selesai"].includes(String(item.status ?? "").toLowerCase());
+  const status = String(item.status ?? "").trim().toLowerCase();
+  const moduleSpecific = completedStatuses[String(item.moduleId ?? "")] ?? [];
+  return moduleSpecific.includes(status) || ["completed", "complete", "done", "finished", "selesai"].includes(status);
 }
 
 function todayJakarta() {
@@ -128,7 +168,7 @@ export async function GET(request: Request) {
       scope: "personal",
       moduleId: moduleId || null,
       metrics: metrics(items),
-      modules: summarizeModules(items),
+      modules: summarizeModules(items, moduleId ? [moduleId] : Object.values(moduleIds).flat()),
       items: items.slice(0, 200),
     });
   } catch (error) {
