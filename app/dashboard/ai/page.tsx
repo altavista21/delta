@@ -50,7 +50,7 @@ export default function DeltaAiPage() {
     if (!text || loading || !user) return;
     setError("");
     setInput("");
-    const nextMessages: Message[] = [...messages, { role: "user", text }].slice(-12);
+    const nextMessages: Message[] = [...messages, { role: "user" as const, text }].slice(-12);
     setMessages(nextMessages);
     setLoading(true);
     try {
