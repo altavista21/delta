@@ -118,7 +118,7 @@ export default function Home() {
 }
 
 function moduleSlug(module: string) {
-  const slugs: Record<string, string> = {
+  const existingSlugs: Record<string, string> = {
     "Daily Operations": "daily-operations",
     "Facility & Inventory": "facility-inventory",
     "Visitor Management": "visitor-management",
@@ -128,7 +128,7 @@ function moduleSlug(module: string) {
     "Smart Follow-ups": "smart-follow-ups",
     "Forecasting & Insights": "forecasting-insights",
   };
-  return slugs[module] ?? "daily-operations";
+  return existingSlugs[module] ?? module.toLowerCase().replace(/&/g, "and").replace(/[()]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 }
 
 function moduleDescription(module: string) {

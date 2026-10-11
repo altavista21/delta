@@ -4,23 +4,21 @@ import { adminAuth, adminDb } from "@/lib/firebase-admin";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const officeModules = new Set([
-  "daily-operations",
-  "facility-inventory",
-  "visitor-management",
-  "schedules-announcements",
-]);
-const salesModules = new Set([
-  "sales-pipeline",
-  "team-performance",
-  "smart-follow-ups",
-  "forecasting-insights",
-]);
+const roleModules: Record<string, Set<string>> = {
+  accountant: new Set(["overview","general-ledger","financial-reports","tax-and-compliance","ai-data-analytics"]),
+  hr: new Set(["hr-metrics","recruitment-ats","employee-experience","policy-generator"]),
+  sales: new Set(["sales-pipeline","team-performance","smart-follow-ups","forecasting-insights"]),
+  office: new Set(["daily-operations","facility-inventory","visitor-management","schedules-announcements"]),
+  designer: new Set(["creative-workspace","ai-idea-generator","asset-library","client-approvals"]),
+  financier: new Set(["market-data-and-portfolio","scenario-modeling","risk-assessment","data-driven-decisions"]),
+  teacher: new Set(["classes-and-students","lesson-plan-creator","assignments-and-grading","interactive-resources"]),
+  consultant: new Set(["client-and-engagement","industry-knowledge-base","time-and-invoicing","strategic-reports"]),
+  property: new Set(["property-listings","client-crm-and-leads","showings-calendar","contracts-and-documents"]),
+};
 
 function canUseModule(moduleId: string, role: string) {
-  if (role === "superadmin") return officeModules.has(moduleId) || salesModules.has(moduleId);
-  if (role === "sales") return salesModules.has(moduleId);
-  return role === "office" && officeModules.has(moduleId);
+  if (role === "superadmin") return Object.values(roleModules).some((modules) => modules.has(moduleId));
+  return roleModules[role]?.has(moduleId) ?? false;
 }
 
 async function authorize(request: Request) {
@@ -31,7 +29,7 @@ async function authorize(request: Request) {
     const decoded = await adminAuth().verifyIdToken(token, true);
     const profile = await adminDb().collection("users").doc(decoded.uid).get();
     const role = String(profile.get("role") ?? "");
-    if (!profile.exists || !["office", "sales", "superadmin"].includes(role)) {
+    if (!profile.exists || !["accountant", "hr", "sales", "office", "designer", "financier", "teacher", "consultant", "property", "superadmin"].includes(role)) {
       return { error: "Akses modul ditolak.", status: 403 as const };
     }
     return { uid: decoded.uid, role };
