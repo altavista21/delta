@@ -4,10 +4,10 @@ import { FormEvent, useCallback, useEffect, useState } from "react";
 import { onAuthStateChanged, signOut, User } from "firebase/auth";
 import { auth, firebaseConfigured } from "@/lib/firebase";
 import { roles } from "@/lib/roles";
-import { ArrowLeft, CheckCircle2, CircleAlert, KeyRound, LoaderCircle, LogOut, Plus, RefreshCw, ShieldCheck, UserRound, UserRoundX } from "lucide-react";
+import { ArrowLeft, CheckCircle2, CircleAlert, KeyRound, LoaderCircle, LogOut, Plus, RefreshCw, ShieldCheck, UserRound, UserRoundX, MailCheck } from "lucide-react";
 import Link from "next/link";
 
-type AdminUser = { uid: string; email: string; displayName: string; role: string; disabled: boolean; createdAt: string };
+type AdminUser = { uid: string; email: string; profileEmail: string; displayName: string; role: string; disabled: boolean; createdAt: string };
 
 export default function SuperAdminPage() {
   const [user, setUser] = useState<User | null>(null);
@@ -15,6 +15,7 @@ export default function SuperAdminPage() {
   const [rows, setRows] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [syncingUid, setSyncingUid] = useState("");
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [showCreate, setShowCreate] = useState(false);
@@ -68,6 +69,18 @@ export default function SuperAdminPage() {
     } catch (err) { setError(err instanceof Error ? err.message : "Status akun gagal diubah."); }
   }
 
+  async function syncEmail(account: AdminUser) {
+    const target = account.profileEmail;
+    if (!target || target === account.email.trim().toLowerCase()) return;
+    if (!window.confirm(`Ubah email Firebase Authentication untuk ${account.displayName || account.uid} dari ${account.email || "(kosong)"} menjadi ${target}? Pengguna perlu login kembali menggunakan email baru.`)) return;
+    setSyncingUid(account.uid); setError(""); setNotice("");
+    try {
+      const data = await request("/api/admin/users", { method: "PATCH", body: JSON.stringify({ uid: account.uid, action: "syncEmailFromProfile" }) });
+      setNotice(data.message || "Email berhasil disinkronkan."); await loadUsers();
+    } catch (err) { setError(err instanceof Error ? err.message : "Email gagal disinkronkan."); }
+    finally { setSyncingUid(""); }
+  }
+
   async function logout() { if (auth) await signOut(auth); window.location.replace("/login"); }
 
   if (!sessionReady) return <main style={styles.center}><LoaderCircle /> Memeriksa sesi admin...</main>;
@@ -89,10 +102,13 @@ export default function SuperAdminPage() {
       </form>}
       <div style={styles.listHead}><h2 style={styles.listTitle}>Semua akun</h2><button style={styles.secondary} onClick={() => void loadUsers()} disabled={loading}><RefreshCw size={15} /> Segarkan</button></div>
       <div style={styles.tableWrap}><table style={styles.table}><thead><tr><th style={styles.th}>Pengguna</th><th style={styles.th}>Profesi</th><th style={styles.th}>Status</th><th style={styles.th}>Tindakan</th></tr></thead><tbody>
-        {rows.map((account) => <tr key={account.uid}><td style={styles.td}><strong style={styles.name}>{account.displayName || "Tanpa nama"}</strong><span style={styles.email}>{account.email || "Email tidak tersedia"}</span></td><td style={styles.td}>{roles.find((item) => item.id === account.role)?.label ?? (account.role === "superadmin" ? "Super Admin" : "Belum diatur")}</td><td style={styles.td}><span style={{ ...styles.status, ...(account.disabled ? styles.statusOff : styles.statusOn) }}>{account.disabled ? "Nonaktif" : "Aktif"}</span></td><td style={styles.td}>{account.uid === user?.uid ? <span style={styles.you}>Akun Anda</span> : <button style={account.disabled ? styles.enable : styles.disable} onClick={() => void toggleAccount(account)}>{account.disabled ? <UserRound size={15} /> : <UserRoundX size={15} />}{account.disabled ? "Aktifkan" : "Nonaktifkan"}</button>}</td></tr>)}
+        {rows.map((account) => {
+          const emailMismatch = !!account.profileEmail && account.profileEmail !== account.email.trim().toLowerCase();
+          return <tr key={account.uid}><td style={styles.td}><strong style={styles.name}>{account.displayName || "Tanpa nama"}</strong><span style={styles.email}>{account.email || "Email tidak tersedia"}</span>{emailMismatch && <span style={styles.mismatch}>Email Firestore: {account.profileEmail}</span>}</td><td style={styles.td}>{roles.find((item) => item.id === account.role)?.label ?? (account.role === "superadmin" ? "Super Admin" : "Belum diatur")}</td><td style={styles.td}><span style={{ ...styles.status, ...(account.disabled ? styles.statusOff : styles.statusOn) }}>{account.disabled ? "Nonaktif" : "Aktif"}</span></td><td style={styles.td}><div style={styles.actions}>{emailMismatch && account.uid !== user?.uid && <button style={styles.sync} disabled={syncingUid === account.uid} onClick={() => void syncEmail(account)}>{syncingUid === account.uid ? <LoaderCircle size={15} /> : <MailCheck size={15} />}{syncingUid === account.uid ? "Menyinkronkan..." : "Sinkronkan email"}</button>}{account.uid === user?.uid ? <span style={styles.you}>Akun Anda</span> : <button style={account.disabled ? styles.enable : styles.disable} onClick={() => void toggleAccount(account)}>{account.disabled ? <UserRound size={15} /> : <UserRoundX size={15} />}{account.disabled ? "Aktifkan" : "Nonaktifkan"}</button>}</div></td></tr>;
+        })}
         {!rows.length && <tr><td style={styles.empty} colSpan={4}>{loading ? "Memuat akun..." : "Belum ada akun."}</td></tr>}
       </tbody></table></div>
-      <p style={styles.footnote}>Akses Super Admin dibatasi di server berdasarkan UID yang dikonfigurasi. Kata sandi tidak pernah ditampilkan setelah akun dibuat.</p>
+      <p style={styles.footnote}>Email login bersumber dari Firebase Authentication. Jika berbeda dengan profil Firestore, periksa email tujuan lalu pilih Sinkronkan email. Email yang sudah dipakai akun lain tidak akan ditimpa.</p>
     </section>
   </main>;
 }
@@ -129,6 +145,9 @@ const styles: Record<string, React.CSSProperties> = {
   td: { padding: "15px 16px", borderBottom: "1px solid #f0f1f6", fontSize: 13, verticalAlign: "middle" },
   name: { display: "block", fontSize: 14, marginBottom: 4 },
   email: { color: "#83889a", fontSize: 12, overflowWrap: "anywhere" },
+  mismatch: { display: "block", color: "#9a5b00", fontSize: 12, marginTop: 5, overflowWrap: "anywhere" },
+  actions: { display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 8 },
+  sync: { display: "inline-flex", gap: 6, alignItems: "center", border: "1px solid #c9c4ff", color: "#5144c9", background: "#fff", padding: "7px 9px", borderRadius: 8, cursor: "pointer" },
   status: { display: "inline-block", borderRadius: 20, padding: "5px 9px", fontSize: 11, fontWeight: 700 },
   statusOn: { background: "#eaf8f0", color: "#247346" },
   statusOff: { background: "#fff0f0", color: "#a42d36" },
