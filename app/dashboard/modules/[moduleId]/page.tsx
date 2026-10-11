@@ -4,10 +4,10 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
-import { ArrowLeft, CalendarDays, CheckCircle2, ClipboardList, LoaderCircle, Package, Plus, Trash2, Users, Megaphone, RefreshCw } from "lucide-react";
+import { Activity, ArrowLeft, CalendarDays, CheckCircle2, ClipboardList, LoaderCircle, Package, Plus, Trash2, Users, Megaphone, RefreshCw } from "lucide-react";
 import { auth, db, firebaseConfigured } from "@/lib/firebase";
 
-type ModuleId = "daily-operations" | "facility-inventory" | "visitor-management" | "schedules-announcements";
+type ModuleId = "daily-operations" | "facility-inventory" | "visitor-management" | "schedules-announcements" | "sales-pipeline" | "team-performance" | "smart-follow-ups" | "forecasting-insights";
 type WorkspaceRecord = {
   id: string;
   moduleId: ModuleId;
@@ -31,6 +31,44 @@ const moduleConfig: Record<ModuleId, {
   hasPriority?: boolean;
   hasQuantity?: boolean;
 }> = {
+  "sales-pipeline": {
+    title: "Sales Pipeline",
+    description: "Pantau prospek penjualan dari kontak awal sampai hasil akhir.",
+    titleLabel: "Nama prospek atau peluang",
+    detailLabel: "Perusahaan, nilai, atau langkah berikutnya",
+    icon: Activity,
+    statuses: ["Prospek baru", "Dihubungi", "Negosiasi", "Menang", "Kalah"],
+    hasDate: true,
+    hasPriority: true,
+  },
+  "team-performance": {
+    title: "Team Performance",
+    description: "Catat target, pencapaian, dan kebutuhan dukungan anggota tim.",
+    titleLabel: "Nama anggota tim",
+    detailLabel: "Target dan catatan kinerja",
+    icon: Users,
+    statuses: ["Sesuai target", "Perlu dukungan", "Melampaui target"],
+    hasDate: true,
+  },
+  "smart-follow-ups": {
+    title: "Smart Follow-ups",
+    description: "Kelola jadwal tindak lanjut agar tidak ada prospek yang terlewat.",
+    titleLabel: "Nama prospek atau tindak lanjut",
+    detailLabel: "Catatan tindak lanjut",
+    icon: CalendarDays,
+    statuses: ["Perlu dihubungi", "Dijadwalkan", "Selesai"],
+    hasDate: true,
+    hasPriority: true,
+  },
+  "forecasting-insights": {
+    title: "Forecasting & Insights",
+    description: "Catat perkiraan penjualan dan insight berdasarkan peluang yang ada.",
+    titleLabel: "Judul perkiraan atau insight",
+    detailLabel: "Nilai perkiraan dan dasar analisis",
+    icon: CheckCircle2,
+    statuses: ["Draft", "Ditinjau", "Final"],
+    hasDate: true,
+  },
   "daily-operations": {
     title: "Daily Operations",
     description: "Catat tugas harian, tentukan prioritas, dan pantau pekerjaan sampai selesai.",
@@ -118,7 +156,8 @@ export default function OfficeModulePage() {
           return;
         }
         const role = profileSnapshot.data().role;
-        if (role !== "office" && role !== "superadmin") {
+        const requiredRole = moduleId.startsWith("sales-") || moduleId === "team-performance" || moduleId === "smart-follow-ups" || moduleId === "forecasting-insights" ? "sales" : "office";
+        if (role !== requiredRole && role !== "superadmin") {
           router.replace("/dashboard");
           return;
         }
