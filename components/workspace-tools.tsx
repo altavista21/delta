@@ -8,7 +8,7 @@ type Preferences = { emailUpdates: boolean; taskReminders: boolean; productTips:
 
 const defaults: Preferences = { emailUpdates: true, taskReminders: true, productTips: false, compactView: false };
 
-export default function WorkspaceTools() {
+export default function WorkspaceTools({ variant = "sidebar" }: { variant?: "sidebar" | "inline" }) {
   const [panel, setPanel] = useState<Panel>(null);
   const [query, setQuery] = useState("");
   const [prefs, setPrefs] = useState<Preferences>(defaults);
@@ -62,8 +62,10 @@ export default function WorkspaceTools() {
 
   return (
     <>
-      <button className="nav-item" type="button" onClick={() => { setPanel("help"); setQuery(""); }}><CircleHelp size={18} /> Pusat bantuan</button>
-      <button className="nav-item" type="button" onClick={() => { setPanel("settings"); setSaved(false); }}><Settings2 size={18} /> Pengaturan</button>
+      <div style={variant === "inline" ? { display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" } : { display: "grid", gap: 2 }}>
+        <button className={variant === "inline" ? "module-back" : "nav-item"} type="button" onClick={() => { setPanel("help"); setQuery(""); }}><CircleHelp size={18} /> Pusat bantuan</button>
+        <button className={variant === "inline" ? "module-back" : "nav-item"} type="button" onClick={() => { setPanel("settings"); setSaved(false); }}><Settings2 size={18} /> Pengaturan</button>
+      </div>
       {panel && <div role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setPanel(null); }} style={{ position: "fixed", inset: 0, zIndex: 1000, background: "rgba(15,23,42,.42)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
         <section role="dialog" aria-modal="true" aria-labelledby="workspace-tools-title" style={{ width: "min(100%, 560px)", maxHeight: "min(85dvh, 760px)", overflowY: "auto", background: "var(--panel, #fff)", color: "var(--foreground, #172033)", border: "1px solid #e5e7eb", borderRadius: 18, boxShadow: "0 24px 80px rgba(15,23,42,.25)", padding: 22 }}>
           <header style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 18 }}>
