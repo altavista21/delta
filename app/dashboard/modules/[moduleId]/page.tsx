@@ -425,6 +425,7 @@ export default function OfficeModulePage() {
 const professionLabel = professionByModule[moduleId] ?? "Workspace";
 const config = moduleConfig[moduleId];
   const [userId, setUserId] = useState("");
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [records, setRecords] = useState<WorkspaceRecord[]>([]);
   const [summaryRefresh, setSummaryRefresh] = useState(0);
   const [title, setTitle] = useState("");
@@ -468,6 +469,7 @@ const config = moduleConfig[moduleId];
           return;
         }
         const role = profileSnapshot.data().role;
+        setIsSuperAdmin(role === "superadmin");
         const roleModules: Record<string, string[]> = {"accountant":["overview","general-ledger","financial-reports","tax-and-compliance","ai-data-analytics"],"hr":["hr-metrics","recruitment-ats","employee-experience","policy-generator"],"sales":["sales-pipeline","team-performance","smart-follow-ups","forecasting-insights"],"office":["daily-operations","facility-inventory","visitor-management","schedules-announcements"],"designer":["creative-workspace","ai-idea-generator","asset-library","client-approvals"],"financier":["market-data-and-portfolio","scenario-modeling","risk-assessment","data-driven-decisions"],"teacher":["classes-and-students","lesson-plan-creator","assignments-and-grading","interactive-resources"],"consultant":["client-and-engagement","industry-knowledge-base","time-and-invoicing","strategic-reports"],"property":["property-listings","client-crm-and-leads","showings-calendar","contracts-and-documents"]};
         const allowedForRole = role === "superadmin" || (roleModules[role] ?? []).includes(moduleId);
         if (!allowedForRole) {
@@ -475,7 +477,7 @@ const config = moduleConfig[moduleId];
           return;
         }
         setUserId(user.uid);
-        await loadRecords(user.uid);
+        if (role !== "superadmin") await loadRecords(user.uid);
         setStatus(config?.statuses[0] ?? "");
       } catch {
         setError("Data modul gagal dimuat. Periksa koneksi dan konfigurasi server.");
@@ -572,7 +574,7 @@ const config = moduleConfig[moduleId];
         {error && <div className="module-alert" role="alert">{error}</div>}
         {notice && <div className="module-notice" role="status"><CheckCircle2 size={17} /> {notice}</div>}
 
-        <div className="module-work-grid">
+        {!isSuperAdmin && <div className="module-work-grid">
           <section className="module-panel">
             <div className="module-panel-heading"><div><h2>Tambah data</h2><p>Informasi disimpan ke akun lo di Firestore.</p></div><Plus size={19} /></div>
             <form className="module-form" onSubmit={handleSubmit}>
@@ -594,8 +596,9 @@ const config = moduleConfig[moduleId];
             <div className="module-panel-heading"><div><h2>Data tersimpan</h2><p>{activeRecords.length} catatan pada modul ini</p></div><button className="module-refresh" onClick={() => userId && loadRecords(userId)} aria-label="Muat ulang data"><RefreshCw size={17} /></button></div>
             {loading ? <div className="module-loading"><LoaderCircle className="module-spin" size={20} /> Memuat data...</div> : activeRecords.length === 0 ? <div className="module-empty-records"><Icon size={27} /><b>Belum ada data</b><span>Tambahkan catatan pertama lewat formulir.</span></div> : <div className="module-record-list">{activeRecords.map((record) => <article className="module-record" key={record.id}><div className="module-record-top"><div><h3>{record.title}</h3><span className="module-status">{record.status}</span></div><button className="module-delete" aria-label={`Hapus ${record.title}`} onClick={() => handleDelete(record.id)}><Trash2 size={16} /></button></div>{record.detail && <p>{record.detail}</p>}<div className="module-record-meta">{record.date && <span><CalendarDays size={14} /> {record.date}</span>}{record.priority && <span>Prioritas: {record.priority}</span>}{record.quantity && <span>Jumlah: {record.quantity}</span>}</div></article>)}</div>}
           </section>
-        </div>
-        <p className="module-privacy-note">Data modul ini hanya dapat dibaca dan dikelola oleh akun pemiliknya.</p>
+        </div>}
+        {isSuperAdmin && <div className="module-panel"><p>Anda sedang melihat pencapaian gabungan seluruh perusahaan untuk modul ini. Pengelolaan data operasional tetap dilakukan oleh pemilik catatan.</p><button className="module-save" onClick={() => router.push("/super-admin/achievements")}>Lihat pencapaian seluruh perusahaan</button></div>}
+        {!isSuperAdmin && <p className="module-privacy-note">Data modul ini hanya dapat dibaca dan dikelola oleh akun pemiliknya.</p>}
       </div>
     </main>
   );
