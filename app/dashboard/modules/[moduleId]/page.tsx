@@ -6,6 +6,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { Activity, ArrowLeft, CalendarDays, CheckCircle2, ClipboardList, LoaderCircle, Package, Plus, Trash2, Users, Megaphone, RefreshCw } from "lucide-react";
 import { auth, db, firebaseConfigured } from "@/lib/firebase";
+import WorkspaceTools from "@/components/workspace-tools";
 
 type ModuleId = "overview" | "general-ledger" | "financial-reports" | "tax-and-compliance" | "ai-data-analytics" | "hr-metrics" | "recruitment-ats" | "employee-experience" | "policy-generator" | "sales-pipeline" | "team-performance" | "smart-follow-ups" | "forecasting-insights" | "daily-operations" | "facility-inventory" | "visitor-management" | "schedules-announcements" | "creative-workspace" | "ai-idea-generator" | "asset-library" | "client-approvals" | "market-data-and-portfolio" | "scenario-modeling" | "risk-assessment" | "data-driven-decisions" | "classes-and-students" | "lesson-plan-creator" | "assignments-and-grading" | "interactive-resources" | "client-and-engagement" | "industry-knowledge-base" | "time-and-invoicing" | "strategic-reports" | "property-listings" | "client-crm-and-leads" | "showings-calendar" | "contracts-and-documents";
 type WorkspaceRecord = {
@@ -505,6 +506,7 @@ export default function OfficeModulePage() {
       <header className="module-topbar">
         <button className="module-back" onClick={() => router.push("/dashboard")}><ArrowLeft size={17} /> Dashboard</button>
         <span className="module-brand">delta<span>.</span> WORKSPACE</span>
+        <WorkspaceTools variant="inline" />
       </header>
       <div className="module-content">
         <div className="module-eyebrow">MANAJER KANTOR / MODUL OPERASIONAL</div>
