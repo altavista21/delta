@@ -7,6 +7,7 @@ import { doc, getDoc } from "firebase/firestore";
 import { Activity, ArrowLeft, CalendarDays, CheckCircle2, ClipboardList, LoaderCircle, Package, Plus, Trash2, Users, Megaphone, RefreshCw } from "lucide-react";
 import { auth, db, firebaseConfigured } from "@/lib/firebase";
 import WorkspaceTools from "@/components/workspace-tools";
+import ModuleAchievementSummary from "@/components/module-achievement-summary";
 
 type ModuleId = "overview" | "general-ledger" | "financial-reports" | "tax-and-compliance" | "ai-data-analytics" | "hr-metrics" | "recruitment-ats" | "employee-experience" | "policy-generator" | "sales-pipeline" | "team-performance" | "smart-follow-ups" | "forecasting-insights" | "daily-operations" | "facility-inventory" | "visitor-management" | "schedules-announcements" | "creative-workspace" | "ai-idea-generator" | "asset-library" | "client-approvals" | "market-data-and-portfolio" | "scenario-modeling" | "risk-assessment" | "data-driven-decisions" | "classes-and-students" | "lesson-plan-creator" | "assignments-and-grading" | "interactive-resources" | "client-and-engagement" | "industry-knowledge-base" | "time-and-invoicing" | "strategic-reports" | "property-listings" | "client-crm-and-leads" | "showings-calendar" | "contracts-and-documents";
 type WorkspaceRecord = {
@@ -562,6 +563,8 @@ const config = moduleConfig[moduleId];
           <div className="module-hero-icon"><Icon size={25} /></div>
           <div><h1>{config.title}</h1><p>{config.description}</p></div>
         </section>
+
+        <ModuleAchievementSummary moduleId={moduleId} />
 
         {error && <div className="module-alert" role="alert">{error}</div>}
         {notice && <div className="module-notice" role="status"><CheckCircle2 size={17} /> {notice}</div>}
