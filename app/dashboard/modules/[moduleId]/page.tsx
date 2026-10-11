@@ -126,7 +126,7 @@ export default function OfficeModulePage() {
         await loadRecords(user.uid);
         setStatus(config?.statuses[0] ?? "");
       } catch {
-        setError("Data modul gagal dimuat. Pastikan Firestore Rules terbaru sudah diterapkan.");
+        setError("Data modul gagal dimuat. Periksa koneksi dan konfigurasi server.");
       } finally {
         setLoading(false);
       }
@@ -169,7 +169,7 @@ export default function OfficeModulePage() {
       setPriority("Normal");
       setNotice("Data berhasil disimpan.");
     } catch {
-      setError("Gagal menyimpan data. Terapkan Firestore Rules terbaru lalu coba lagi.");
+      setError("Gagal menyimpan data. Periksa koneksi lalu coba lagi.");
     } finally {
       setSaving(false);
     }
