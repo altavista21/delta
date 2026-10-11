@@ -2,19 +2,51 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     match /users/{userId} {
-      allow read: if request.auth != null && request.auth.uid == userId;
+      // Users can read only their own profile.
+      allow read: if request.auth != null
+        && request.auth.uid == userId;
+
+      // Clients may create a standard-profession profile for themselves only.
+      // Super Admin profiles are created by the trusted Admin SDK endpoint.
       allow create: if request.auth != null
-        && request.resource.data.keys().hasOnly(['uid', 'email', 'displayName', 'role', 'createdAt'])
         && request.auth.uid == userId
+        && request.resource.data.keys().hasAll([
+          'uid', 'email', 'displayName', 'role', 'createdAt'
+        ])
+        && request.resource.data.keys().hasOnly([
+          'uid', 'email', 'displayName', 'role', 'createdAt'
+        ])
         && request.resource.data.uid == request.auth.uid
-        && request.resource.data.role in ['accountant', 'hr', 'sales', 'office', 'designer', 'financier', 'teacher', 'consultant', 'property'];
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.displayName is string
+        && request.resource.data.displayName.size() > 0
+        && request.resource.data.displayName.size() <= 80
+        && request.resource.data.role in [
+          'accountant', 'hr', 'sales', 'office', 'designer',
+          'financier', 'teacher', 'consultant', 'property'
+        ]
+        && request.resource.data.createdAt is timestamp;
+
+      // Profile owners may change only their display name.
+      // UID, email, profession/role and creation time stay immutable.
       allow update: if request.auth != null
         && request.auth.uid == userId
-        && request.resource.data.role == resource.data.role
         && request.resource.data.uid == resource.data.uid
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName']);
+        && request.resource.data.email == resource.data.email
+        && request.resource.data.role == resource.data.role
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.displayName is string
+        && request.resource.data.displayName.size() > 0
+        && request.resource.data.displayName.size() <= 80
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'displayName'
+        ]);
+
       allow delete: if false;
     }
+
+    // Workspace data is accessed through server API routes using Firebase Admin.
+    // Deny all direct client access to all other collections by default.
     match /{document=**} {
       allow read, write: if false;
     }
