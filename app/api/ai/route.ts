@@ -77,7 +77,7 @@ export async function POST(request: Request) {
       const snapshot = await adminDb().collection("workspaceData").doc(decoded.uid).collection("items").limit(40).get();
       const allowedModules = role === "superadmin" ? new Set(Object.values(roleModules).flatMap((set) => [...set])) : roleModules[role] ?? new Set<string>();
       const records = snapshot.docs
-        .map((doc) => ({ id: doc.id, ...doc.data() }))
+        .map((doc) => ({ id: doc.id, ...doc.data() } as { id: string; moduleId?: unknown; createdAt?: unknown; title?: unknown; detail?: unknown; status?: unknown; priority?: unknown; date?: unknown }))
         .filter((item) => allowedModules.has(String(item.moduleId)))
         .sort((a, b) => Number(b.createdAt ?? 0) - Number(a.createdAt ?? 0))
         .slice(0, 8)
