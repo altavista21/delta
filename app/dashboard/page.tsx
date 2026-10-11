@@ -77,13 +77,8 @@ export default function Home() {
     router.replace("/login");
   }
 
-  function changeRole(id: string) {
-    setRoleId(id);
-    const next = roles.find((item) => item.id === id);
-    setActiveModule(next?.modules[0] ?? "Overview");
-    setQuery("");
-    setMenuOpen(false);
-  }
+  if (!authReady) return <main className="auth-page"><div className="auth-loading">Menyiapkan ruang kerjamu...</div></main>;
+  if (authError) return <main className="auth-page"><section className="auth-card"><div className="auth-icon"><Sparkles size={22} /></div><h1>Dashboard belum siap</h1><p className="auth-description">{authError}</p><a className="auth-submit auth-link-button" href="/login">Kembali ke login</a></section></main>;
 
   return (
     <main className="app-shell">
