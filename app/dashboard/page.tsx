@@ -123,6 +123,10 @@ function moduleSlug(module: string) {
     "Facility & Inventory": "facility-inventory",
     "Visitor Management": "visitor-management",
     "Schedules & Announcements": "schedules-announcements",
+    "Sales Pipeline": "sales-pipeline",
+    "Team Performance": "team-performance",
+    "Smart Follow-ups": "smart-follow-ups",
+    "Forecasting & Insights": "forecasting-insights",
   };
   return slugs[module] ?? "daily-operations";
 }
